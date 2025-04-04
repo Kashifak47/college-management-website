@@ -1,0 +1,346 @@
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 p-4 text-white flex justify-between items-center shadow-md">
+        <h1 class="text-2xl font-bold">Manage Students</h1>
+        <a th:href="@{/admin/dashboard}" class="hover:underline">Go to Dashboard</a>
+    </nav>
+
+    <div class="p-4 md:p-8">
+        
+        <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-2xl font-bold mb-4" th:text="${student.id} ? 'Edit Student' : 'Add Student'"></h2>
+            <form th:action="@{/admin/student/save}" th:object="${student}" method="post">
+                <input type="hidden" th:field="*{id}">
+                
+                <label class="block font-medium">Name:</label>
+                <input type="text" th:field="*{name}" required class="w-full p-2 border rounded-md mb-3 focus:ring focus:ring-blue-300">
+                
+                <label class="block font-medium">Email:</label>
+                <input type="email" th:field="*{email}" required class="w-full p-2 border rounded-md mb-3 focus:ring focus:ring-blue-300">
+                
+                <label class="block font-medium">Password:</label>
+                <input type="password" th:field="*{password}" required class="w-full p-2 border rounded-md mb-3 focus:ring focus:ring-blue-300">
+                
+                <label class="block font-medium">Course:</label>
+                <select th:field="*{course.id}" required class="w-full p-2 border rounded-md mb-3 focus:ring focus:ring-blue-300">
+                    <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.courseName}"></option>
+                </select>
+                
+                <label class="block font-medium">Fee Status:</label>
+                <select th:field="*{feeStatus}" class="w-full p-2 border rounded-md mb-3 focus:ring focus:ring-blue-300">
+                    <option th:value="Paid">Paid</option>
+                    <option th:value="Pending">Pending</option>
+                </select>
+
+                <button type="submit" name="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-800 w-full md:w-auto">
+                    Save Student
+                </button>
+            </form>
+        </div>
+
+       
+        <div class="overflow-x-auto">
+            <table class="w-full bg-white rounded-lg shadow-md min-w-[600px]">
+                <thead>
+                    <tr class="bg-blue-600 text-white text-sm md:text-base">
+                        <th class="p-3">ID</th>
+                        <th class="p-3">Name</th>
+                        <th class="p-3">Email</th>
+                        <th class="p-3">Password</th>
+                        <th class="p-3">Course</th>
+                        <th class="p-3">Fee Status</th>
+                        <th class="p-3">Actions</th>
+                    </tr>
+                </thead>
+				<tbody>
+				    <tr th:each="student : ${students}" class="border-b hover:bg-gray-200 text-sm md:text-base">
+				        <td class="p-3 text-center" th:text="${student.id}"></td>
+				        <td class="p-3 text-left" th:text="${student.name}"></td>
+				        <td class="p-3 text-left break-words" th:text="${student.email}"></td>
+				        <td class="p-3 text-left break-words" th:text="${student.password}"></td> 
+				        <td class="p-3 text-left" th:text="${student.course.courseName}"></td>
+						<td class="p-3 text-center">
+						    <span th:text="${student.feeStatus}" 
+						          th:classappend="${#strings.trim(student.feeStatus) == 'Paid' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}">
+						    </span>
+						</td>
+				        <td class="p-3 flex flex-wrap gap-2 justify-center">
+				            <a th:href="@{/admin/student/edit/{id}(id=${student.id})}" 
+				               class="bg-yellow-500 text-white px-4 py-1 rounded-md hover:bg-yellow-700 transition duration-300 text-center">
+				                Edit
+				            </a>
+				            <a th:href="@{/admin/student/delete/{id}(id=${student.id})}" 
+				               class="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-700 transition duration-300 text-center"
+				               onclick="return confirm('Are you sure you want to delete this student?');">
+				                Delete
+				            </a>
+				        </td>
+				    </tr>
+				</tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>-->
+
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-600 p-4 text-white flex justify-between items-center shadow-md">
+        <h1 class="text-xl md:text-2xl font-bold">Student Management</h1>
+        <a th:href="@{/admin/dashboard}" class="hover:underline text-sm md:text-base">Go to Dashboard</a>
+    </nav>
+
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded shadow mt-4">
+        <h2 class="text-xl font-bold mb-4">Student Management</h2>
+
+        <!-- Success & Error Messages -->
+		<div th:if="${param.success}" class="bg-green-100 text-green-800 p-3 rounded-lg" id="successMessage">
+		    <p th:text="${param.success}"></p>
+		</div>
+
+		<div th:if="${param.error}" class="bg-red-100 text-red-800 p-3 rounded-lg" id="errorMessage">
+		    <p th:text="${param.error}"></p>
+		</div>
+
+		<script>
+		    document.addEventListener('DOMContentLoaded', function() {
+		        let successMessage = document.getElementById('successMessage');
+		        let errorMessage = document.getElementById('errorMessage');
+
+		        if (successMessage) {
+		            setTimeout(function() {
+		                successMessage.style.display = 'none';
+		            }, 2000); // 2000 milliseconds = 2 seconds
+		        }
+
+		        if (errorMessage) {
+		            setTimeout(function() {
+		                errorMessage.style.display = 'none';
+		            }, 2000);
+		        }
+		    });
+		</script>
+		
+		
+
+        <!-- Student Form -->
+		<!--<form th:action="@{/admin/student/save}" method="post" enctype="multipart/form-data" class="space-y-4">-->
+			<form th:action="@{${student.id == null} ? '/admin/student/save' : '/admin/student/update/' + ${student.id}}" 
+			      method="post" enctype="multipart/form-data" class="space-y-4">
+		    <input type="hidden" name="id" th:value="${student.id}">
+
+		    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+		        <div>
+		            <label class="block text-gray-700">Full Name</label>
+		            <input type="text" name="name" class="border p-2 rounded w-full" th:value="${student.name}" required>
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Roll Number</label>
+		            <input type="text" name="rollNumber" class="border p-2 rounded w-full" th:value="${student.rollNumber}" required>
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Gender</label>
+		            <select name="gender" class="border p-2 rounded w-full">
+		                <option value="Male" th:selected="${student.gender == 'Male'}">Male</option>
+		                <option value="Female" th:selected="${student.gender == 'Female'}">Female</option>
+		            </select>
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Date of Birth</label>
+		            <input type="date" name="dateOfBirth" class="border p-2 rounded w-full" th:value="${#dates.format(student.dateOfBirth, 'yyyy-MM-dd')}" required>
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Category</label>
+		            <input type="text" name="category" class="border p-2 rounded w-full" th:value="${student.category}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Mobile Number</label>
+		            <input type="text" name="mobileNumber" class="border p-2 rounded w-full" th:value="${student.mobileNumber}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Email</label>
+		            <input type="email" name="email" class="border p-2 rounded w-full" th:value="${student.email}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Password</label>
+		            <input type="text" name="password" class="border p-2 rounded w-full" th:value="${student.password}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Course Name</label>
+		            <select name="course.id" required class="border p-2 rounded w-full focus:ring focus:ring-blue-300">
+		                <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.courseName}" th:selected="${student.course != null && student.course.id == course.id}"></option>
+		            </select>
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Fee Status</label>
+					<select th:field="${student.feeStatus}" class="border p-2 rounded w-full">
+					    <option value="Paid">Paid</option>
+					    <option value="Pending">Pending</option>
+					</select>
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Address</label>
+		            <input type="text" name="address" class="border p-2 rounded w-full" th:value="${student.address}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">City</label>
+		            <input type="text" name="city" class="border p-2 rounded w-full" th:value="${student.city}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Pincode</label>
+		            <input type="text" name="pincode" class="border p-2 rounded w-full" th:value="${student.pincode}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">State</label>
+		            <input type="text" name="state" class="border p-2 rounded w-full" th:value="${student.state}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Country</label>
+		            <input type="text" name="country" class="border p-2 rounded w-full" th:value="${student.country}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Father's Name</label>
+		            <input type="text" name="fatherName" class="border p-2 rounded w-full" th:value="${student.fatherName}">
+		        </div>
+
+		        <div>
+		            <label class="block text-gray-700">Mother's Name</label>
+		            <input type="text" name="motherName" class="border p-2 rounded w-full" th:value="${student.motherName}">
+		        </div>
+
+				<div>
+				    <div class="flex items-center gap-4">
+				        <div>
+				            <img th:src="@{${student.imageFileName != null and not #strings.isEmpty(student.imageFileName) ? 
+				                '/uploads/' + student.imageFileName : '/uploads/default.png'}}" 
+				                class="w-24 h-24 object-cover rounded border" 
+				                alt="" onerror="this.style.display='none'" >
+				        </div>
+				        <div>
+				            <label class="block text-gray-700">Upload New Image</label>
+				            <input type="file" name="imageFile" class="border p-2 rounded w-full">
+				        </div>
+				    </div>
+				</div>
+
+		    </div>
+
+		    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-full sm:w-auto">Save Student</button>
+		</form>
+        <!-- Student Table -->
+		<div class="mt-6 overflow-x-auto">
+		    <h2 class="text-lg font-semibold mb-3">Student List</h2>
+		    <table class="w-full border-collapse border border-gray-300 min-w-[900px]">
+		        <thead>
+		            <tr class="bg-gray-200 text-xs">
+		                <th class="border p-2">ID</th>
+		                <th class="border p-2">Name</th>
+		                <th class="border p-2">Roll No</th>
+		                <th class="border p-2">Gender</th>
+		                <th class="border p-2">DOB</th>
+		                <th class="border p-2">Category</th>
+		                <th class="border p-2">Mobile</th>
+		                <th class="border p-2">Email</th>
+		                <th class="border p-2">Password</th>
+		                <th class="border p-2">Course</th>
+		                <th class="border p-2">Fee Status</th>
+		                <th class="border p-2">Address</th>
+		                <th class="border p-2">City</th>
+		                <th class="border p-2">Pincode</th>
+		                <th class="border p-2">State</th>
+		                <th class="border p-2">Country</th>
+		                <th class="border p-2">Father</th>
+		                <th class="border p-2">Mother</th>
+		                <th class="border p-2">Image</th>
+		                <th class="border p-2">Actions</th>
+		            </tr>
+		        </thead>
+		        <tbody>
+		            <tr th:each="student : ${students}">
+		                <td class="border p-2" th:text="${student.id}"></td>
+		                <td class="border p-2" th:text="${student.name}"></td>
+		                <td class="border p-2" th:text="${student.rollNumber}"></td>
+		                <td class="border p-2" th:text="${student.gender}"></td>
+		                <td class="border p-2" th:text="${student.dateOfBirth}"></td>
+		                <td class="border p-2" th:text="${student.category}"></td>
+		                <td class="border p-2" th:text="${student.mobileNumber}"></td>
+		                <td class="border p-2" th:text="${student.email}"></td>
+		                <td class="border p-2" th:text="${student.password}"></td>
+		                <td class="border p-2" th:text="${student.course.courseName}"></td>
+		                <td class="border p-2 text-center">
+		                    <span th:text="${student.feeStatus}" 
+		                          th:classappend="${#strings.trim(student.feeStatus) == 'Paid' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}">
+		                    </span>
+		                </td>                        
+		                <td class="border p-2" th:text="${student.address}"></td>
+		                <td class="border p-2" th:text="${student.city}"></td>
+		                <td class="border p-2" th:text="${student.pincode}"></td>
+		                <td class="border p-2" th:text="${student.state}"></td>
+		                <td class="border p-2" th:text="${student.country}"></td>
+		                <td class="border p-2" th:text="${student.fatherName}"></td>
+		                <td class="border p-2" th:text="${student.motherName}"></td>
+						<td class="border p-2">
+						    <img th:if="${student.imageFileName != null and not #strings.isEmpty(student.imageFileName)}"
+						         th:src="@{/uploads/{imageFileName}(imageFileName=${student.imageFileName})}"
+						         class="w-12 h-12 object-cover"
+						         alt="Student Image" />
+						    <img th:unless="${student.imageFileName != null and not #strings.isEmpty(student.imageFileName)}"
+						         th:src="@{/uploads/default.png}"
+						         class="w-12 h-12 object-cover"
+						         alt="Default Image" />
+						</td>
+						<td class="border p-2 text-center">
+						    <div class="flex items-center justify-center gap-4">
+						        <!-- Edit Button -->
+						        <a th:href="@{/admin/student/edit/{id}(id=${student.id})}" 
+						           class="text-blue-500 hover:text-blue-700 text-xl" title="Edit">
+						            ✏️
+						        </a>
+						        
+						        <!-- Delete Button -->
+						        <a th:href="@{/admin/student/delete/{id}(id=${student.id})}" 
+						           class="text-red-500 hover:text-red-700 text-xl" title="Delete"
+						           onclick="return confirm('Are you sure you want to delete this student?');">
+						            ❌
+						        </a>
+						    </div>
+						</td>
+		            </tr>
+		        </tbody>
+		    </table>
+		</div>
+    </div>
+</body>
+</html>
